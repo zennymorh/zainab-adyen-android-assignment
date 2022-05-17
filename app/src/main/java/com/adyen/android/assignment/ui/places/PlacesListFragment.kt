@@ -1,28 +1,34 @@
 package com.adyen.android.assignment.ui.places
 
-import androidx.lifecycle.ViewModelProvider
+import android.content.pm.PackageManager
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.adyen.android.assignment.R
+import com.adyen.android.assignment.util.Constants
+import com.adyen.android.assignment.util.Permissions
 
-class PlacesListFragment : Fragment() {
+class PlacesListFragment : Fragment(R.layout.places_list_fragment) {
 
-    private lateinit var viewModel: PlacesListViewModel
+    private val viewModel: PlacesListViewModel by viewModels()
+    private lateinit var permission: Permissions
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.places_list_fragment, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        permission = Permissions(requireContext(), requireActivity())
+        permission.getLocation()
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(PlacesListViewModel::class.java)
-        // TODO: Use the ViewModel
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == Constants.PERMISSION_ID) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                permission.getLocation()
+            }
+        }
     }
-
 }
