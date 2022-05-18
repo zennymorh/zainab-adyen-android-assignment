@@ -193,4 +193,8 @@ class HomeFragment : Fragment() {
         _binding = null
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+    }
+
 }

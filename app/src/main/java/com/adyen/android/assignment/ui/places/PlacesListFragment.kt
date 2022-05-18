@@ -92,4 +92,8 @@ class PlacesListFragment : Fragment() {
     private fun renderList(result: List<Result>) {
         placeListAdapter.updateList(result)
     }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+    }
 }
