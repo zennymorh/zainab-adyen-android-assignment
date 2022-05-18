@@ -53,6 +53,14 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
 
     testImplementation "junit:junit:4.13.2"
+    // Mock
+    testImplementation "org.mockito:mockito-core:3.7.7"
+    testImplementation "com.nhaarman:mockito-kotlin-kt1.1:1.5.0"
+    testImplementation "org.mockito:mockito-all:1.9.5"
+    testImplementation "io.mockk:mockk:1.12.1"
+    testImplementation "androidx.arch.core:core-testing:2.1.0"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.3.4"
+
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -83,7 +91,4 @@ dependencies {
     // Hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
-
-    //Material theme
-    implementation 'com.google.android.material:material:1.7.0-alpha01'
 }

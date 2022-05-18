@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flowOn
 import retrofit2.HttpException
 import javax.inject.Inject
 
-class PlacesListRepositoryImpl @Inject constructor(
+open class PlacesListRepositoryImpl @Inject constructor(
     private val placesService: PlacesService
 ) : IPlacesListRepository {
     override suspend fun getVenueRecommendations(location: String): Flow<State<List<Result>>> {

@@ -45,7 +45,7 @@ class PlacesListAdapter(var placesList: List<Result>, var listener: ItemClickLis
 
         fun bind(result: Result) {
             nameText.text = result.name
-            addressText.text = result.location.address
+            addressText.text = result.location?.address
             timeZoneText.text = result.timezone
         }
 
