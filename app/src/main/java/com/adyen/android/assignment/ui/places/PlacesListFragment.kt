@@ -1,33 +1,39 @@
 package com.adyen.android.assignment.ui.places
 
-import android.Manifest
-import android.content.DialogInterface
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationManager
+import android.content.res.Configuration
 import android.os.Bundle
-import android.os.Looper
-import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
+import com.adyen.android.assignment.R
+import com.adyen.android.assignment.api.model.Result
 import com.adyen.android.assignment.databinding.PlacesListFragmentBinding
-import com.adyen.android.assignment.util.Constants
-import com.adyen.android.assignment.util.NetworkConnection
-import com.google.android.gms.location.*
+import com.adyen.android.assignment.util.CloseVenueState
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 
 class PlacesListFragment : Fragment() {
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var _binding: PlacesListFragmentBinding? = null
-    private val binding get() = _binding!!
-    private var locationString = ""
+    val binding get() = _binding!!
+    private val locationStringArgs: PlacesListFragmentArgs by navArgs()
 
-    private lateinit var networkConnection: NetworkConnection
+    private val onPlaceItemSelected by lazy {
+        object : ItemClickListener {
+            override fun invoke(result: Result) {
+                findNavController().navigate(R.id.action_placesListFragment_to_detailFragment)
+            }
+        }
+    }
+    private val viewModel by activityViewModels<PlacesListViewModel>()
+
+    private val placeListAdapter: PlacesListAdapter by lazy {
+        PlacesListAdapter(arrayListOf(), onPlaceItemSelected)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,155 +41,55 @@ class PlacesListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = PlacesListFragmentBinding.inflate(inflater, container, false)
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
-
-        getLocation()
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (!checkForPermissions()) {
-            requestPermissions()
-        } else if (!isLocationEnabled()) {
-            openSettings()
-        } else {
-            observeNetworkState()
-        }
-
-        Toast.makeText(requireContext(), locationString, Toast.LENGTH_SHORT).show()
+        binding.placesListRecycler.adapter = placeListAdapter
+        viewModel.getVenueRecommendations(locationStringArgs.location)
+        observeViewModel(view)
     }
 
-    private fun observeNetworkState() {
-        networkConnection = NetworkConnection(requireContext())
-        networkConnection.observe(viewLifecycleOwner) { isConnected ->
-            if (isConnected) {
-                Toast.makeText(requireContext(), "is connected", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(requireContext(), "is not connected", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        if (requestCode == Constants.PERMISSION_ID) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLocation()
-            }
-        }
-    }
-
-    private fun getLocation() {
-        if (checkForPermissions()) {
-            if (isLocationEnabled()) {
-                if (ActivityCompat.checkSelfPermission(
-                        requireContext(),
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    )
-                    == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                        requireActivity(),
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
-                    == PackageManager.PERMISSION_GRANTED
-                ) {
-
-                    fusedLocationClient.lastLocation.addOnCompleteListener(requireActivity()) { task ->
-                        val location: Location? = task.result
-                        if (location == null) {
-                            requestLocationData()
-                        } else {
-                            locationString = "${location.latitude},${location.longitude}"
-                        }
+    private fun observeViewModel(view: View) {
+        lifecycleScope.launch {
+            viewModel.closeVenueState.collect {
+                when (it) {
+                    is CloseVenueState.Loading -> {
+                        binding.progressBar.visibility = View.VISIBLE
                     }
+                    is CloseVenueState.Error -> {
+                        binding.progressBar.visibility = View.GONE
+                        val snackBar = Snackbar.make(
+                            view,
+                            "Error, please try again",
+                            Snackbar.LENGTH_INDEFINITE
+                        )
+                        snackBar.setAction("Retry") {
+                            viewModel.getVenueRecommendations(
+                                locationStringArgs.location
+                            )
+                        }
+                        snackBar.show()
+                    }
+                    is CloseVenueState.Success -> {
+                        it.data?.let { result -> renderList(result) }
+                        binding.progressBar.visibility = View.GONE
+                    }
+                    else -> {}
                 }
-            } else {
-                openSettings()
             }
-        } else {
-            requestPermissions()
+
         }
     }
 
-    private fun openSettings() {
-        val positiveButtonClick = DialogInterface.OnClickListener { _, _ ->
-            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-            ContextCompat.startActivity(requireContext(), intent, null)
-        }
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 
-    private fun checkForPermissions(): Boolean {
-        if (ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            )
-            == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-            == PackageManager.PERMISSION_GRANTED
-        ) {
-            return true
-        }
-        return false
-    }
-
-    private fun requestPermissions() {
-        ActivityCompat.requestPermissions(
-            requireActivity(),
-            arrayOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ),
-            Constants.PERMISSION_ID
-        )
-    }
-
-    private fun isLocationEnabled(): Boolean {
-        val locationManager: LocationManager =
-            ContextCompat.getSystemService(
-                requireContext(),
-                LocationManager::class.java
-            ) as LocationManager
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
-            LocationManager.NETWORK_PROVIDER
-        )
-    }
-
-    private fun requestLocationData() {
-        val locationRequest = LocationRequest()
-        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        locationRequest.interval = 0
-        locationRequest.fastestInterval = 0
-        locationRequest.numUpdates = 1
-
-        val locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                locationResult.lastLocation
-            }
-        }
-
-        if (ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-            == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            )
-            == PackageManager.PERMISSION_GRANTED
-        ) {
-            Looper.myLooper()?.let {
-                fusedLocationClient.requestLocationUpdates(
-                    locationRequest, locationCallback,
-                    it
-                )
-            }
-        }
+    private fun renderList(result: List<Result>) {
+        placeListAdapter.updateList(result)
     }
 }

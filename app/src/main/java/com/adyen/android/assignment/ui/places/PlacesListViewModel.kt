@@ -13,7 +13,7 @@ import javax.inject.Inject
 class PlacesListViewModel @Inject constructor(
     private val placesListRepositoryImpl: PlacesListRepositoryImpl
 ) : ViewModel() {
-    private val closeVenueState = MutableStateFlow<CloseVenueState?>(null)
+    val closeVenueState = MutableStateFlow<CloseVenueState?>(null)
 
     fun getVenueRecommendations(location: String) {
         viewModelScope.launch {

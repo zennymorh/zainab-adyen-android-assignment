@@ -3,20 +3,32 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/placesListFragment">
+    app:startDestination="@id/homeFragment">
 
     <fragment
         android:id="@+id/placesListFragment"
         android:name="com.adyen.android.assignment.ui.places.PlacesListFragment"
-        android:label="places_list_fragment"
-        tools:layout="@layout/places_list_fragment" >
+        android:label="Close Venues"
+        tools:layout="@layout/places_list_fragment">
         <action
             android:id="@+id/action_placesListFragment_to_detailFragment"
             app:destination="@id/detailFragment" />
+        <argument
+            android:name="location"
+            app:argType="string"
+            app:nullable="false" />
     </fragment>
     <fragment
         android:id="@+id/detailFragment"
         android:name="com.adyen.android.assignment.ui.detail.DetailFragment"
         android:label="fragment_detail"
         tools:layout="@layout/fragment_detail" />
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.adyen.android.assignment.ui.HomeFragment"
+        android:label="HomeFragment">
+        <action
+            android:id="@+id/action_homeFragment_to_placesListFragment"
+            app:destination="@id/placesListFragment" />
+    </fragment>
 </navigation>

@@ -83,4 +83,7 @@ dependencies {
     // Hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
+
+    //Material theme
+    implementation 'com.google.android.material:material:1.7.0-alpha01'
 }

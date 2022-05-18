@@ -30,13 +30,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setUpNavigation() {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
 
         navController = navHostFragment.navController
 
         appBarConfig = AppBarConfiguration(
             setOf(
-                R.id.placesListFragment
+                R.id.homeFragment
             )
         )
         setupActionBarWithNavController(navController, appBarConfig)
@@ -46,7 +47,4 @@ class MainActivity : AppCompatActivity() {
         return NavigationUI.navigateUp(navController, appBarConfig)
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-    }
 }
