@@ -16,3 +16,10 @@ Minimal requirements:
 - Implement permission handling
 - Show a list of venues based on the current location
 - Apply best practices to handle configuration changes
+
+Libraries used:
+- Hilt for dependency injection
+- Retrofit and OkHttp for network call
+- Android Navigation Component; Safe args
+- Coroutines Flow to handle network calls
+- JUnit and Mockito for testing

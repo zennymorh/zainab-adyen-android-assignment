@@ -1,16 +1,13 @@
 package com.adyen.android.assignment.ui.places
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.adyen.android.assignment.R
 import com.adyen.android.assignment.api.model.Result
 
-typealias ItemClickListener = (Result) -> Unit
-
-class PlacesListAdapter(var placesList: List<Result>, var listener: ItemClickListener) :
+class PlacesListAdapter(private var placesList: List<Result>) :
     RecyclerView.Adapter<PlacesListAdapter.PlacesViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlacesViewHolder {
@@ -30,14 +27,11 @@ class PlacesListAdapter(var placesList: List<Result>, var listener: ItemClickLis
         notifyDataSetChanged()
     }
 
-    inner class PlacesViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
+    class PlacesViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
         RecyclerView.ViewHolder(
             inflater.inflate(
-                R.layout.place_item, parent,
-                false
-            )
-        ),
-        View.OnClickListener {
+                R.layout.place_item, parent, false)
+        ){
 
         private val nameText: TextView = itemView.findViewById(R.id.location_name_text)
         private val addressText: TextView = itemView.findViewById(R.id.address_text)
@@ -47,11 +41,6 @@ class PlacesListAdapter(var placesList: List<Result>, var listener: ItemClickLis
             nameText.text = result.name
             addressText.text = result.location?.address
             timeZoneText.text = result.timezone
-        }
-
-        override fun onClick(v: View?) {
-            val place = placesList[adapterPosition]
-            listener.invoke(place)
         }
 
     }

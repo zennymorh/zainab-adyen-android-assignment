@@ -8,9 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.adyen.android.assignment.R
 import com.adyen.android.assignment.api.model.Result
 import com.adyen.android.assignment.databinding.PlacesListFragmentBinding
 import com.adyen.android.assignment.util.CloseVenueState
@@ -19,27 +17,20 @@ import kotlinx.coroutines.launch
 
 class PlacesListFragment : Fragment() {
     private var _binding: PlacesListFragmentBinding? = null
-    val binding get() = _binding!!
+    private val binding get() = _binding!!
     private val locationStringArgs: PlacesListFragmentArgs by navArgs()
 
-    private val onPlaceItemSelected by lazy {
-        object : ItemClickListener {
-            override fun invoke(result: Result) {
-                findNavController().navigate(R.id.action_placesListFragment_to_detailFragment)
-            }
-        }
-    }
     private val viewModel by activityViewModels<PlacesListViewModel>()
 
     private val placeListAdapter: PlacesListAdapter by lazy {
-        PlacesListAdapter(arrayListOf(), onPlaceItemSelected)
+        PlacesListAdapter(arrayListOf())
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = PlacesListFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
